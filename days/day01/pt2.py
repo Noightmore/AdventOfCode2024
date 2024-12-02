@@ -20,7 +20,7 @@ def part2(data):
     """
     column1, column2 = data
 
-    # how many time each number from column1 appears in column2
+    # how many times each number from column1 appears in column2
     count = {number: column2.count(number) for number in column1}
 
     # multiply each number by the number of times it appears in column2 and sum all these numbers
