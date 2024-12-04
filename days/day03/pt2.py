@@ -23,8 +23,6 @@ def get_multiplications(data: list):
         all_matches = sorted(matches_mul + matches_dos + matches_dont, key=lambda x: x[1])
         print(all_matches)
 
-
-
         for match, pos in all_matches:
             if match.startswith("mul"):
                 numbers = [int(num) for num in re.findall(r"\d+", match)]
