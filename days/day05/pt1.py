@@ -1,84 +1,88 @@
 import re
-
 import numpy as np
 
 
-def parse_input(input_file):
-    with open(input_file, 'r') as file:
-        data = file.readlines()
+def read_file(filename):
+    """
+    Reads the file and separates rules and updates.
+    Assumes the file has a blank line separating the rules from the updates.
+    """
+    with open(filename, 'r') as f:
+        lines = [line.strip() for line in f if line.strip() != '']
 
-        # remove the newline character from the end of each line
-        data = [line.strip() for line in data]
+    # Now 'lines' contains no empty lines, we assume that rules come first until no more match 'X|Y' pattern
+    # If you know there's a guaranteed blank line in the file, you can split on that,
+    # but here we assume after rules we have updates directly.
 
-        # while there's not a blank line convert these numbers 34|53 into a dict entry {34: 53}
+    # A safer approach is:
+    pattern = re.compile(r'^\d+\|\d+$')
 
-        pattern = re.compile(r'^(\d+)\|(\d+)$')
-        rules = {}
-        entries = []
-
-        for line in data:
-            line = line.strip()
-            if line == '':
-                # Skip blank lines
-                continue
-
-            match = pattern.match(line)
-            if match:
-                # Line matches the pattern x|y
-                x_val = match.group(1)
-                y_val = match.group(2)
-                if y_val not in rules:
-                    rules[y_val] = []
-                rules[y_val].append(x_val)
+    # Separate rules from updates:
+    rules_lines = []
+    updates_lines = []
+    mode = 'rules'
+    for line in lines:
+        if mode == 'rules':
+            # If it's still matching the rule pattern, it's a rule
+            if pattern.match(line):
+                rules_lines.append(line)
             else:
-                # Line doesn't match the pattern and is not blank
-                # Treat as comma-separated integers
-                str_values = line.split(',')
-                #print(str_values)
-                int_values = list(map(int, str_values))
-                arr = np.array(int_values)
-                entries.append(arr)
+                # Once we hit a line that doesn't match a rule, treat it as an update line
+                mode = 'updates'
+                updates_lines.append(line)
+        else:
+            updates_lines.append(line)
 
-        return rules, entries
+    return rules_lines, updates_lines
 
 
-def day05_part1(input_file='test.txt'):
-    rules, entries = parse_input(input_file)
-    print(rules)
-    print(entries)
+def parse_rules(rule_lines):
+    pattern = re.compile(r'^(\d+)\|(\d+)$')
+    rules = []
+    for line in rule_lines:
+        match = pattern.match(line)
+        if match:
+            x_val = int(match.group(1))
+            y_val = int(match.group(2))
+            rules.append((x_val, y_val))
+    return rules
 
-    t = 0  # total sum of middle elements for rows that meet all rules
 
-    for i, row in enumerate(entries):
-        print(f"Checking row {i}: {row}")
-        str_row = list(map(str, row))
+def parse_updates(update_lines):
+    updates = []
+    for line in update_lines:
+        str_values = line.split(',')
+        int_values = list(map(int, str_values))
+        arr = np.array(int_values)
+        updates.append(arr)
+    return updates
 
-        # Flag to indicate if this row meets all rules
-        all_rules_met = True
 
-        for y_val, x_list in rules.items():
-            if y_val in str_row:
-                y_index = str_row.index(y_val)
-                # Now we check if all X in rules[Y] appear somewhere before Y
-                for x_val in x_list:
-                    # Check if x_val is in the portion before y_val
-                    if x_val not in str_row[:y_index]:
-                        all_rules_met = False
-                        break
-                if not all_rules_met:
-                    break
+def update_is_correct(update, rules):
+    update_list = update.tolist()
+    for (X, Y) in rules:
+        if X in update_list and Y in update_list:
+            x_index = update_list.index(X)
+            y_index = update_list.index(Y)
+            if x_index > y_index:  # X must come before Y
+                return False
+    return True
 
-        if all_rules_met:
-            # If all rules are met for this row, add the middle element to t
-            mid_index = len(row) // 2
-            middle_element = row[mid_index]
-            t += middle_element
 
-    print("Total:", t)
+def sum_middle_of_correct_updates(rule_lines, update_lines):
+    rules = parse_rules(rule_lines)
+    updates = parse_updates(update_lines)
+
+    total = 0
+    for update in updates:
+        if update_is_correct(update, rules):
+            mid_index = len(update) // 2
+            total += update[mid_index]
+    return total
 
 
 if __name__ == "__main__":
-    day05_part1()
-
-
-
+    # Replace 'input.txt' with the actual filename
+    rule_lines, update_lines = read_file('in.txt')
+    result = sum_middle_of_correct_updates(rule_lines, update_lines)
+    print("Total:", result)
