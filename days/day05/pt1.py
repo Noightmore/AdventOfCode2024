@@ -84,5 +84,14 @@ def sum_middle_of_correct_updates(rule_lines, update_lines):
 if __name__ == "__main__":
     # Replace 'input.txt' with the actual filename
     rule_lines, update_lines = read_file('in.txt')
+
+    rules = parse_rules(rule_lines)
+    updates = parse_updates(update_lines)
+
+    #print("Rules:", rule_lines)
+    #print("Updates:", update_lines)
+    #print("Parsed rules:", rules)
+    #print("Parsed updates:", updates)
+
     result = sum_middle_of_correct_updates(rule_lines, update_lines)
     print("Total:", result)
