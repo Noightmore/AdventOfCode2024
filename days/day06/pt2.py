@@ -24,7 +24,7 @@ def convert_char_to_complex_orientation(char: str) -> complex:
 
 def record_obstacles(lines: list) -> tuple[list[complex], complex, complex, str | Any]:
     obstacles = []
-    box_bounds = len(lines[0]) + len(lines)*1j - (1 + 1j)  # to keep track of the maximum right and bottom bounds
+    box_bounds = len(lines[0]) + len(lines) * 1j - (1 + 1j)  # to keep track of the maximum right and bottom bounds
 
     coords = 0 + 0j
     guard_pos = 0 + 0j
@@ -45,7 +45,7 @@ def record_obstacles(lines: list) -> tuple[list[complex], complex, complex, str 
     return obstacles, guard_pos, box_bounds, guard_momentum
 
 
-def day06_pt1(file_path: str) -> NoReturn:
+def day06_pt2(file_path: str):
     lines = load_file(file_path)
     obstacles, guard_pos, box_bounds, guard_momentum = record_obstacles(lines)
 
@@ -73,7 +73,7 @@ def day06_pt1(file_path: str) -> NoReturn:
             guard_momentum *= 1j
 
         # visualize the guard's movement
-        #print(guard_pos)
+        # print(guard_pos)
 
     # The guard stopped when leaving the bounds, remove that last out-of-bounds position if present
     # (Check if guard_pos is still within bounds before removing)
@@ -102,32 +102,33 @@ def day06_pt1(file_path: str) -> NoReturn:
     # positions_to_try = list(positions_to_try)
 
     # We now consider placing a new obstacle
-    deltas = [1, -1, 1j, -1j]
+    # deltas = [1, -1, 1j, -1j]
+    #
+    # neighbors_of_visits = set()
+    # for pos in total_unique_visits:
+    #     for d in deltas:
+    #         neighbors_of_visits.add(pos + d)
+    #
+    # # Candidate positions:
+    # # - Must not be guard's starting pos
+    # # - Must not be existing obstacles
+    # # - Must be within the bounding box
+    # # - Based on total_unique_visits and their neighbors
+    # positions_to_try = (total_unique_visits | neighbors_of_visits) - {og_guard_pos} - set(obstacles)
+    # positions_to_try = {p for p in positions_to_try
+    #                     if 0 <= p.real <= box_bounds.real and 0 <= p.imag <= box_bounds.imag}
+    #
+    # positions_to_try = list(positions_to_try)
 
-    neighbors_of_visits = set()
-    for pos in total_unique_visits:
-        for d in deltas:
-            neighbors_of_visits.add(pos + d)
-
-    # Candidate positions:
-    # - Must not be guard's starting pos
-    # - Must not be existing obstacles
-    # - Must be within the bounding box
-    # - Based on total_unique_visits and their neighbors
-    positions_to_try = (total_unique_visits | neighbors_of_visits) - {og_guard_pos} - set(obstacles)
-    positions_to_try = {p for p in positions_to_try
-                        if 0 <= p.real <= box_bounds.real and 0 <= p.imag <= box_bounds.imag}
-
-    positions_to_try = list(positions_to_try)
+    positions_to_try = list(total_unique_visits - {og_guard_pos} - set(obstacles))
 
     print(f"Positions to try: {len(positions_to_try)}")
-    bruhs = [238]
 
     for attempt in range(0, len(positions_to_try)):
-        print(f"Attempt: {attempt}")
-        print(total_working_obstacles)
+        # print(f"Attempt: {attempt}")
+        # print(total_working_obstacles)
 
-        #if attempt in bruhs:
+        # if attempt in bruhs:
         #    continue
 
         guard_pos = og_guard_pos
@@ -144,11 +145,11 @@ def day06_pt1(file_path: str) -> NoReturn:
 
             # to check if he's in a loop we periodically run into the new obstacle, last in the elements
             elif guard_pos + guard_momentum == positions_to_try[attempt]:
-                if touches_of_new_obstacle >= touched_new_obstacle_max_count:
-                    total_working_obstacles += 1
-                    break
-                else:
-                    touches_of_new_obstacle += 1
+                # if touches_of_new_obstacle >= touched_new_obstacle_max_count:
+                #     total_working_obstacles += 1
+                #     break
+                # else:
+                #     touches_of_new_obstacle += 1
                 guard_momentum *= 1j  # do not forget to turn lol
 
             # if it is an old obstacle then we change the direction of the guard to the right by 90 degrees
@@ -159,10 +160,17 @@ def day06_pt1(file_path: str) -> NoReturn:
             if cycles > 30000:
                 total_working_obstacles += 1
                 break
-        print(cycles)
+        # print(cycles)
     print(total_working_obstacles)
+    return total_working_obstacles
 
 
 if __name__ == "__main__":
+    # measure total time:
+    import time
+    start = time.time()
     file_path = "in.txt"
-    day06_pt1(file_path)
+    out = day06_pt2(file_path)
+    end = time.time()
+    print(f"Time: {end - start}")
+
