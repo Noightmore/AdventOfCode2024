@@ -1,47 +1,63 @@
-import numpy as np
-from multiprocessing import Pool
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from functools import cache
+from time import perf_counter
 
+import numpy as np
 
 def import_data(input_file='test.txt'):
     with open(input_file, 'r') as file:
         data = file.read().split(' ')
         data = [int(x) for x in data]
-        data = np.array(data)
-    return data
+    return data  # Return as a regular list for easier iteration
 
 
-def process_stone(stone):
+@cache
+def count(stone, depth):
+    # Every call adds 1 to the count
+    counter = 0
+
+    if depth <= 0:
+        return 0
+
     if stone == 0:
-        return [1]
+        # Recursive call for splitting stone
+        counter += count(1, depth - 1)
+        return counter
+
     elif len(str(stone)) % 2 == 0:
-        half_len = len(str(stone)) // 2
-        divisor = 10 ** half_len
-        left = stone // divisor
-        right = stone % divisor
-        return [left, right]
-    else:
-        return [stone * 2024]
+        # Split the number in half as a string
+        half = len(str(stone)) // 2
+        left = int(str(stone)[:half])
+        right = int(str(stone)[half:])
+        counter += count(left, depth - 1) + count(right, depth - 1)
+        counter += 1
+        return counter
 
-def update_stones(stones):
-    with Pool() as pool:
-        results = pool.map(process_stone, stones)
-    return np.concatenate(results)
+    # Recursive call for odd-length stones
+    counter += count(stone * 2024, depth - 1)
+
+    return counter
 
 
 
-def day11_part1():
+def day11_part2():
     stones = import_data('in.txt')
-    print(stones)
 
+    # Process stones recursively over 75 blinks
     blinks = 75
-    for blink in range(blinks):
-        stones = update_stones(stones)
-        #print(stones)
-        print(f"For {blink}th we have stones: {len(stones)}")
+    total_count = 0
 
-    print(len(stones))
+    #for stone in stones:
+    #    total_count += count(stone, blinks)
 
+    total_count += sum([count(stone, blinks) for stone in stones])
+    total_count += len(stones)
 
+    #total_count += len(stones)
+    #total_count += count(1, 2)
+
+    print(total_count)
 if __name__ == '__main__':
-    day11_part1()
+
+    time = perf_counter()
+    day11_part2() # 277444936413293
+    print(perf_counter() - time) # 0.5429236059990217 s
