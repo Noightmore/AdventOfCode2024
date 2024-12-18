@@ -56,6 +56,8 @@ def day11_part2():
     #total_count += count(1, 2)
 
     print(total_count)
+
+
 if __name__ == '__main__':
 
     time = perf_counter()
